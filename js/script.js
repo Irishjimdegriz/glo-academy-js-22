@@ -93,7 +93,7 @@ class Todo {
     } else if (target.matches('.todo-remove')) {
       this.deleteItem(target.closest('.todo-item'));
     } else if (target.matches('.todo-edit')) {
-
+      target.closest('.todo-item').setAttribute('contentEditable', true);
     }
   }
 
