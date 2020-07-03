@@ -142,7 +142,21 @@ class Todo {
     } else if (target.matches('.todo-remove')) {
       this.deleteItem(target.closest('.todo-item'));
     } else if (target.matches('.todo-edit')) {
-      target.closest('.todo-item').setAttribute('contentEditable', true);
+      const todoItem = target.closest('.todo-item');
+      if (todoItem.getAttribute('contentEditable')) {
+        this.todoData.get(todoItem.key).value = todoItem.textContent;
+        this.addToStorage();
+        todoItem.setAttribute('contentEditable', false);
+      } else {
+        todoItem.setAttribute('contentEditable', true);
+        todoItem.addEventListener('keydown', (event) => {
+          if (event.code === 'Enter') {
+            this.todoData.get(todoItem.key).value = todoItem.textContent;
+            this.addToStorage();
+            todoItem.setAttribute('contentEditable', false);
+          }
+        });
+      }
     }
   }
 
@@ -150,6 +164,9 @@ class Todo {
     this.form.addEventListener('submit', this.addTodo.bind(this));
     this.todoContainer.addEventListener('click', this.handler.bind(this));
     this.todoContainer.style.overflow = 'hidden';
+    // document.addEventListener('keydown', (event) => {
+    //   if ()
+    // });
     this.render();
   }
 }
