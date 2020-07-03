@@ -1,11 +1,12 @@
 'use strict';
 
 class Todo {
-  constructor(form, input, todoList, todoCompleted) {
+  constructor(form, input, todoList, todoCompleted, todoContainer) {
     this.form = document.querySelector(form),
     this.input = document.querySelector(input),
     this.todoList = document.querySelector(todoList),
     this.todoCompleted = document.querySelector(todoCompleted),
+    this.todoContainer = document.querySelector(todoContainer),
     this.todoData = new Map(JSON.parse(localStorage.getItem('todoList')));
   }
 
@@ -50,6 +51,9 @@ class Todo {
 
       this.todoData.set(newTodo.key, newTodo);
       this.render();
+      this.input.value = '';
+    } else {
+      alert('Нельзя добавить пустое дело!');
     }
   }
 
@@ -57,23 +61,48 @@ class Todo {
     return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
   }
 
-  deleteItem() {
+  deleteItem(item) {
+    let closestList = item.closest('.todo-list');
 
+    if (closestList !== null) {
+      this.todoData.delete(item.key);
+    } else {
+      this.todoData.delete(item.key);
+    }
+
+    this.render();
   }
 
-  completedItem() {
+  completedItem(item) {
+    let closestList = item.closest('.todo-list');
 
+    if (closestList !== null) {
+      this.todoData.get(item.key).completed = true;
+    } else {
+      this.todoData.get(item.key).completed = false;
+    }
+
+    this.render();
   }
 
-  handler() {
-    //делегирование
+  handler(event) {
+    let target = event.target;
+
+    if (target.matches('.todo-complete')) {
+      this.completedItem(target.closest('.todo-item'));
+    } else if (target.matches('.todo-remove')) {
+      this.deleteItem(target.closest('.todo-item'));
+    } else if (target.matches('.todo-edit')) {
+
+    }
   }
 
   init() {
     this.form.addEventListener('submit', this.addTodo.bind(this));
+    this.todoContainer.addEventListener('click', this.handler.bind(this));
     this.render();
   }
 }
 
-const todo = new Todo('.todo-control', '.header-input', '.todo-list', '.todo-complete');
+const todo = new Todo('.todo-control', '.header-input', '.todo-list', '.todo-completed', '.todo-container');
 todo.init();
