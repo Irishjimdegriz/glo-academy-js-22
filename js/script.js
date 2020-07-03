@@ -7,6 +7,8 @@ class Todo {
     this.todoList = document.querySelector(todoList),
     this.todoCompleted = document.querySelector(todoCompleted),
     this.todoContainer = document.querySelector(todoContainer),
+    this.animationFrame,
+    this.todoAnimationCount = -100;
     this.todoData = new Map(JSON.parse(localStorage.getItem('todoList')));
   }
 
@@ -31,7 +33,8 @@ class Todo {
       <button class="todo-remove"></button>
       <button class="todo-complete"></button>
     </div>`);
-
+    // this.todoAnimationCount = -100;
+    // this.animationFrame = requestAnimationFrame(this.animateTodo.bind(this, li));
     if (todo.completed) {
       this.todoCompleted.append(li);
     } else {
@@ -62,15 +65,22 @@ class Todo {
   }
 
   deleteItem(item) {
+    this.todoData.delete(item.key);
     let closestList = item.closest('.todo-list');
 
     if (closestList !== null) {
-      this.todoData.delete(item.key);
+      this.todoList.querySelectorAll('li').forEach((elem) => {
+        if (elem.key === item.key) {
+          this.animationFrame = requestAnimationFrame(this.animateTodo.bind(this, elem, 0, 0));
+        }
+      });
     } else {
-      this.todoData.delete(item.key);
+      this.todoComplete.querySelectorAll('li').forEach((elem) => {
+        if (elem.key === item.key) {
+          this.animationFrame = requestAnimationFrame(this.animateTodo.bind(this, elem, 0, 0));
+        }
+      });
     }
-
-    this.render();
   }
 
   completedItem(item) {
@@ -78,11 +88,50 @@ class Todo {
 
     if (closestList !== null) {
       this.todoData.get(item.key).completed = true;
+      this.todoList.querySelectorAll('li').forEach((elem) => {
+        if (elem.key === item.key) {
+          this.animationFrame = requestAnimationFrame(this.animateTodo.bind(this, elem, 0, 0));
+        }
+      });
+      this.todoCompleted.querySelectorAll('li').forEach((elem) => {
+        if (elem.key === item.key) {
+          this.animationFrame = requestAnimationFrame(this.animateTodo.bind(this, elem, 1, -100));
+        }
+      });
     } else {
       this.todoData.get(item.key).completed = false;
+      this.todoCompleted.querySelectorAll('li').forEach((elem) => {
+        if (elem.key === item.key) {
+          this.animationFrame = requestAnimationFrame(this.animateTodo.bind(this, elem, 0, 0));
+        }
+      });
+      this.todoList.querySelectorAll('li').forEach((elem) => {
+        if (elem.key === item.key) {
+          this.animationFrame = requestAnimationFrame(this.animateTodo.bind(this, elem, 1, -100));
+        }
+      });
     }
 
-    this.render();
+    //this.render();
+  }
+
+  animateTodo(element, mode, counter) {
+    counter++;
+    element.style.left = `${counter}%`;  
+    
+    if (mode === 0) {
+      if (counter < 100) {
+        this.animationFrame = requestAnimationFrame(this.animateTodo.bind(this, element, mode, counter));
+      } else {        
+        this.render();
+      }
+    } else {
+      if (counter < 0) {
+        this.animationFrame = requestAnimationFrame(this.animateTodo.bind(this, element, mode, counter));
+      } else {        
+        this.render();
+      }
+    }
   }
 
   handler(event) {
@@ -100,6 +149,7 @@ class Todo {
   init() {
     this.form.addEventListener('submit', this.addTodo.bind(this));
     this.todoContainer.addEventListener('click', this.handler.bind(this));
+    this.todoContainer.style.overflow = 'hidden';
     this.render();
   }
 }
